@@ -21,4 +21,7 @@ public abstract class Vehiculo {
     public String getNombre() {
         return nombre;
     }
+    public void reiniciar() {
+        this.posicion = 0;
+    }
 }
