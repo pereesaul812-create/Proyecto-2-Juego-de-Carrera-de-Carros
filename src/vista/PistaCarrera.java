@@ -207,15 +207,15 @@ public class PistaCarrera extends JFrame {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 if (paso == 0) {
-                    lblSemaforo.setText("🔴 PREPARADOS...");
+                    lblSemaforo.setText("2 PREPARADOS...");
                     lblSemaforo.setForeground(new Color(255, 50, 50));
                     modelo.ReproductorAudio.getInstancia().reproducirEfecto("beep.wav");
                 } else if (paso == 1) {
-                    lblSemaforo.setText("🟡 LISTOS...");
+                    lblSemaforo.setText("1 LISTOS...");
                     lblSemaforo.setForeground(new Color(255, 255, 50));
                     modelo.ReproductorAudio.getInstancia().reproducirEfecto("beep.wav");
                 } else if (paso == 2) {
-                    lblSemaforo.setText("🟢 ¡GOGOGO!");
+                    lblSemaforo.setText("0 ¡GOGOGO!");
                     lblSemaforo.setForeground(new Color(50, 255, 50));
                     modelo.ReproductorAudio.getInstancia().reproducirEfecto("go.wav");
                     carreraActiva = true;
@@ -377,18 +377,28 @@ public class PistaCarrera extends JFrame {
         dialogoPausa.setVisible(true);
     }
 
-    private JLabel crearVehiculoImagen(String nombreArchivo, int y) {
-        JLabel label = new JLabel();
-        java.net.URL url = getClass().getResource("/imagenes/" + nombreArchivo);
-        if (url != null) {
-            ImageIcon iconoOriginal = new ImageIcon(url);
-            Image imagenEscalada = iconoOriginal.getImage().getScaledInstance(100, 50, Image.SCALE_SMOOTH);
-            label.setIcon(new ImageIcon(imagenEscalada));
-        } else {
-            label.setText("IMG_ERROR"); label.setForeground(Color.RED); label.setOpaque(true);
-        }
-        label.setBounds(10, y, 100, 50); 
+private JLabel crearVehiculoImagen(String nombreArchivo, int y) {
+    JLabel label = new JLabel();
+    
+    // Si es modo 1 jugador y se trata del auto fantasma u otro no asignado, lo ocultamos de inmediato
+    if (unJugador && (nombreArchivo.contains("Fantasma") || nombreArchivo.contains("vocho"))) {
+        label.setVisible(false);
         add(label);
         return label;
     }
+
+    java.net.URL url = getClass().getResource("/imagenes/" + nombreArchivo);
+    if (url != null) {
+        ImageIcon iconoOriginal = new ImageIcon(url);
+        Image imagenEscalada = iconoOriginal.getImage().getScaledInstance(100, 50, Image.SCALE_SMOOTH);
+        label.setIcon(new ImageIcon(imagenEscalada));
+    } else {
+        // Evita el error visual de "IMG_ERROR" ocultando el componente si el recurso no existe
+        label.setVisible(false);
+    }
+    
+    label.setBounds(10, y, 100, 50); 
+    add(label);
+    return label;
+}
 }

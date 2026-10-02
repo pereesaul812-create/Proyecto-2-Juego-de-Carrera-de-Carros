@@ -27,7 +27,7 @@ public class CarroCPU extends Vehiculo {
                 break;
             case "Dificil":
                 // Avanza rapidísimo (max 22 extra), es casi imbatible
-                avance += rand.nextInt(22); 
+                avance += rand.nextInt(30); 
                 break;
             default:
                 avance += rand.nextInt(10);

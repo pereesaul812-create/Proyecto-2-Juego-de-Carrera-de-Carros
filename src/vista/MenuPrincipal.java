@@ -1,282 +1,195 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package vista;
 
-/**
- *
- * @author WINDOWS
- */
-public class MenuPrincipal extends javax.swing.JFrame {
-    
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(MenuPrincipal.class.getName());
+import modelo.*;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ItemEvent;
 
-    /**
-     * Creates new form MenuPrincipal
-     */
+public class MenuPrincipal extends JFrame {
+
+    private JComboBox<String> cmbModo;
+    private JComboBox<String> cmbDificultad;
+    private JComboBox<String> cmbAutosJ1;
+    private JComboBox<String> cmbAutosJ2;
+    private JButton btnIniciar;
+    private JButton btnManual;
+    private JButton btnSonido;
+    private JButton btnSalirApp;
+    private JPanel panelJ2;
+
     public MenuPrincipal() {
-        initComponents();
-        aplicarTema();
+        setTitle("Copa Loca Racing - Menú Principal");
+        setSize(450, 560);
+        setLocationRelativeTo(null);
+        setUndecorated(true); // Estilo moderno sin bordes
+
+        // Panel principal con el estilo limpio y unificado
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBackground(new Color(30, 15, 60)); 
+        mainPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(255, 200, 50), 3), // Borde dorado
+                BorderFactory.createEmptyBorder(20, 20, 20, 20)
+        ));
+
+        // Título del Menú
+        JLabel lblTitulo = new JLabel("Copa Loca Racing");
+        lblTitulo.setForeground(new Color(255, 200, 50));
+        lblTitulo.setFont(new Font("Consolas", Font.BOLD, 24));
+        lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        mainPanel.add(lblTitulo);
+        mainPanel.add(Box.createVerticalStrut(15));
+
+        // --- MODO Y DIFICULTAD DE CPU ---
+        JPanel panelConfig = new JPanel(new GridLayout(1, 2, 10, 0));
+        panelConfig.setBackground(new Color(45, 25, 80));
+        panelConfig.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        
+        cmbModo = new JComboBox<>(new String[]{"1 Jugador", "2 Jugadores"});
+        cmbDificultad = new JComboBox<>(new String[]{"Fácil", "Medio", "Difícil"});
+        
+        panelConfig.add(cmbModo);
+        panelConfig.add(cmbDificultad);
+        panelConfig.setMaximumSize(new Dimension(400, 40));
+        mainPanel.add(panelConfig);
+        mainPanel.add(Box.createVerticalStrut(10));
+
+        // --- CATÁLOGO DE VEHÍCULOS ---
+        String[] catalogoAutos = {
+            "- Auto Rojo -", 
+            "- Deportivo Azul -", 
+            "- Deportivo Rojo -", 
+            "- Fórmula 1 -", 
+            "- Fórmula 2 -", 
+            "- Vocho -"
+        };
+
+        // Jugador 1
+        cmbAutosJ1 = new JComboBox<>(catalogoAutos);
+        JPanel panelJ1 = crearPanelConTitulo("Jugador 1", cmbAutosJ1);
+        panelJ1.setMaximumSize(new Dimension(400, 55));
+        mainPanel.add(panelJ1);
+        mainPanel.add(Box.createVerticalStrut(10));
+
+        // Jugador 2 (Dinámico)
+        cmbAutosJ2 = new JComboBox<>(catalogoAutos);
+        panelJ2 = crearPanelConTitulo("Jugador 2", cmbAutosJ2);
+        panelJ2.setMaximumSize(new Dimension(400, 55));
+        panelJ2.setVisible(false); // Inicia oculto en 1 Jugador
+        mainPanel.add(panelJ2);
+        mainPanel.add(Box.createVerticalStrut(15));
+
+        // --- BOTONES DE ACCIÓN ---
+        btnIniciar = crearBotonEstilizado("Iniciar Carrera");
+        btnManual = crearBotonEstilizado("Manual de Usuario");
+        btnSonido = crearBotonEstilizado("Ajustes de Sonido");
+        btnSalirApp = crearBotonEstilizado("Salir del Juego");
+
+        mainPanel.add(btnIniciar);
+        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(btnManual);
+        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(btnSonido);
+        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(btnSalirApp);
+
+        add(mainPanel);
+
+        // --- EVENTOS ---
+        cmbModo.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                boolean esDosJugadores = cmbModo.getSelectedItem().equals("2 Jugadores");
+                panelJ2.setVisible(esDosJugadores);
+                revalidate();
+                repaint();
+            }
+        });
+
+        btnIniciar.addActionListener(e -> ejecutarArranque());
+        btnSalirApp.addActionListener(e -> System.exit(0));
+        btnManual.addActionListener(e -> new ManualUsuario(this).setVisible(true));
+        
+        // Conexión del botón de Ajustes de Sonido con la clase de audio de tu compañero
+        btnSonido.addActionListener(e -> {
+            try {
+                // Si la clase se llama ConfiguracionAudio o AjustesSonido, se abrirá aquí
+                // Cambia el nombre si tu compañero usó otro identificador exacto en el paquete vista
+                new ConfiguracionAudio(this).setVisible(true);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Ventana de audio abierta o no encontrada: " + ex.getMessage());
+            }
+        });
     }
-    
-    private void aplicarTema() {
-        // Quitar bordes del sistema para igualar al menú de pausa
-        // Es necesario llamar a dispose() antes porque initComponents() hace un pack() y lo vuelve "displayable"
-        this.dispose();
-        setUndecorated(true);
-        
-        // Iniciar música de fondo del menú
-        modelo.ReproductorAudio.getInstancia().reproducirMusica("menu_synthwave.wav");
-        
-        // Crear un panel con el mismo diseño del menú de pausa
-        javax.swing.JPanel mainPanel = new javax.swing.JPanel();
-        mainPanel.setLayout(new java.awt.GridLayout(7, 1, 10, 10));
-        mainPanel.setBackground(new java.awt.Color(30, 15, 60));
-        mainPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(
-                javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 200, 50), 3),
-                javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20)
+
+    private JPanel crearPanelConTitulo(String titulo, JComboBox<String> combo) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(new Color(45, 25, 80));
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(120, 40, 180), 2),
+            BorderFactory.createEmptyBorder(5, 8, 5, 8)
         ));
         
-        // Título principal
-        jLabel1.setForeground(new java.awt.Color(255, 200, 50));
-        jLabel1.setFont(new java.awt.Font("Consolas", java.awt.Font.BOLD, 24));
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        JLabel lbl = new JLabel(titulo);
+        lbl.setForeground(Color.WHITE);
+        lbl.setFont(new Font("Consolas", Font.BOLD, 12));
         
-        // Estilo de los botones
-        java.awt.Color colorBoton = new java.awt.Color(200, 40, 120);
-        java.awt.Color colorTexto = java.awt.Color.WHITE;
-        java.awt.Font fuenteBotones = new java.awt.Font("Consolas", java.awt.Font.BOLD, 14);
-        
-        jButton1.setBackground(colorBoton);
-        jButton1.setForeground(colorTexto);
-        jButton1.setFont(fuenteBotones);
-        jButton1.setOpaque(true);
-        jButton1.setBorderPainted(false);
-        jButton1.setFocusPainted(false);
-        
-        jButton2.setBackground(colorBoton);
-        jButton2.setForeground(colorTexto);
-        jButton2.setFont(fuenteBotones);
-        jButton2.setOpaque(true);
-        jButton2.setBorderPainted(false);
-        jButton2.setFocusPainted(false);
-        
-        // Solo agregamos el listener si no tiene ninguno (para evitar duplicados al instanciar)
-        if (jButton2.getActionListeners().length == 0) {
-            jButton2.addActionListener(e -> {
-                modelo.ReproductorAudio.getInstancia().reproducirEfecto("click.wav");
-                new ManualUsuario(this).setVisible(true);
-            });
-        }
-        
-        // Botón Ajustes
-        javax.swing.JButton btnAjustes = new javax.swing.JButton("Ajustes de Sonido");
-        btnAjustes.setBackground(colorBoton);
-        btnAjustes.setForeground(colorTexto);
-        btnAjustes.setFont(fuenteBotones);
-        btnAjustes.setOpaque(true);
-        btnAjustes.setBorderPainted(false);
-        btnAjustes.setFocusPainted(false);
-        btnAjustes.addActionListener(e -> {
-            modelo.ReproductorAudio.getInstancia().reproducirEfecto("click.wav");
-            new ConfiguracionAudio(this).setVisible(true);
-        });
-        
-        // Botón de salir (necesario ya que quitamos los controles de la ventana)
-        javax.swing.JButton btnSalir = new javax.swing.JButton("Salir del Juego");
-        btnSalir.setBackground(colorBoton);
-        btnSalir.setForeground(colorTexto);
-        btnSalir.setFont(fuenteBotones);
-        btnSalir.setOpaque(true);
-        btnSalir.setBorderPainted(false);
-        btnSalir.setFocusPainted(false);
-        btnSalir.addActionListener(e -> {
-            modelo.ReproductorAudio.getInstancia().reproducirEfecto("click.wav");
-            System.exit(0);
-        });
-        
-        // Estilo de los selectores (combobox)
-        cmbAutos.setFont(new java.awt.Font("Consolas", java.awt.Font.PLAIN, 14));
-        cmbModo.setFont(new java.awt.Font("Consolas", java.awt.Font.PLAIN, 14));
-        
-        // Agrupar elementos en el nuevo orden: Título, Combobox, Botones
-        mainPanel.add(jLabel1);
-        mainPanel.add(cmbAutos);
-        mainPanel.add(cmbModo);
-        mainPanel.add(jButton1);
-        mainPanel.add(jButton2);
-        mainPanel.add(btnAjustes);
-        mainPanel.add(btnSalir);
-        
-        // Reemplazar el contenedor principal y centrar
-        setContentPane(mainPanel);
-        setSize(320, 420);
-        setLocationRelativeTo(null);
+        panel.add(lbl, BorderLayout.NORTH);
+        panel.add(combo, BorderLayout.CENTER);
+        return panel;
     }
 
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+    private JButton crearBotonEstilizado(String texto) {
+        JButton boton = new JButton(texto);
+        boton.setBackground(new Color(200, 40, 120)); // Color rosado unificado
+        boton.setForeground(Color.WHITE);
+        boton.setFont(new Font("Consolas", Font.BOLD, 14));
+        boton.setOpaque(true);
+        boton.setBorderPainted(false);
+        boton.setFocusPainted(false);
+        boton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        boton.setMaximumSize(new Dimension(350, 35));
+        return boton;
+    }
 
-        jLabel1 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        cmbAutos = new javax.swing.JComboBox<>();
-        cmbModo = new javax.swing.JComboBox<>();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
-        jLabel1.setText("Copa Loca Racing");
-        jLabel1.setToolTipText("");
-
-        jButton1.setText("Iniciar Carrera");
-        jButton1.addActionListener(this::jButton1ActionPerformed);
-
-        jButton2.setText("Manual de Usuario");
-
-        cmbAutos.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "auto_rojo", "deportivo_azul", "deportivo_rojo", "formula_1", "formula_2", "vocho" }));
-        cmbAutos.addActionListener(this::cmbAutosActionPerformed);
-
-        cmbModo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "1 Jugador", "2 Jugadores" }));
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(111, 111, 111)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
-                            .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(cmbAutos, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(144, 144, 144)
-                        .addComponent(cmbModo, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(100, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(25, 25, 25)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(cmbAutos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(38, 38, 38)
-                .addComponent(jButton1)
-                .addGap(29, 29, 29)
-                .addComponent(jButton2)
-                .addGap(29, 29, 29)
-                .addComponent(cmbModo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(39, Short.MAX_VALUE))
-        );
-
-        pack();
-    }// </editor-fold>//GEN-END:initComponents
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        modelo.ReproductorAudio.getInstancia().reproducirEfecto("click.wav");
-        modelo.ReproductorAudio.getInstancia().detenerMusica(); // Preparamos el silencio para la carrera
-    // BLOQUE 2: Va DENTRO del evento del botón Iniciar Carrera
+    private void ejecutarArranque() {
         try {
-            // 1. Obtenemos el auto que eligió el usuario en el ComboBox
-            String eleccionJ1 = cmbAutos.getSelectedItem().toString();
+            boolean esDosJugadores = cmbModo.getSelectedItem().equals("2 Jugadores");
+            boolean esUnJugador = !esDosJugadores;
+            String nivelDificultad = cmbDificultad.getSelectedItem().toString(); 
 
-            // 2. Creamos la lista exacta con los nombres de tus archivos
-            java.util.ArrayList<String> disponibles = new java.util.ArrayList<>();
-            disponibles.add("auto_rojo");
-            disponibles.add("deportivo_azul");
-            disponibles.add("deportivo_rojo");
-            disponibles.add("formula_1");
-            disponibles.add("formula_2");
-            disponibles.add("vocho");
-
-            // 3. Quitamos el que eligió el J1 para que no se repita
-            disponibles.remove(eleccionJ1);
-
-            // 4. Revolvemos los 5 que quedan
-            java.util.Collections.shuffle(disponibles);
-
-            // 5. Asignamos los dos primeros de la lista revuelta al J2 y a la CPU
-            String eleccionJ2 = disponibles.get(0);
-            String eleccionCPU = disponibles.get(1);
-
-            // 6. Fabricamos los objetos para J1 y J2 usando el método de arriba
-            modelo.Vehiculo autoJ1 = fabricarVehiculo(eleccionJ1);
-            modelo.Vehiculo autoJ2 = fabricarVehiculo(eleccionJ2);
+            Vehiculo auto1 = fabricarVehiculo(cmbAutosJ1.getSelectedItem().toString());
+            Vehiculo auto2;
             
-            // 7. Abrimos la pista. NOTA: Le pasamos también el nombre del auto de la CPU
-
-            // Obtenemos si eligió 1 o 2 jugadores
-            boolean esUnJugador = cmbModo.getSelectedItem().toString().equals("1 Jugador");
-
-            // ... (El resto de tu código de selección y barajado de autos se queda igual) ...
-            
-            // ACTUALIZA LA LÍNEA DONDE ABRES LA PISTA para enviarle el modo de juego al final
-            vista.PistaCarrera pista = new vista.PistaCarrera(autoJ1, autoJ2, "Medio", eleccionCPU, esUnJugador);
-            pista.setVisible(true);
-            this.dispose(); // Cierra el menú
-            
-        } catch (Exception e) { // Uso obligatorio del try-catch
-            javax.swing.JOptionPane.showMessageDialog(this, "Falla de motor: " + e.getMessage());
-        }
-    }//GEN-LAST:event_jButton1ActionPerformed
-
-    private void cmbAutosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbAutosActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cmbAutosActionPerformed
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-      //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
+            if (esDosJugadores) {
+                auto2 = fabricarVehiculo(cmbAutosJ2.getSelectedItem().toString());
+            } else {
+                auto2 = new Camioneta("Fantasma"); 
             }
-        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
+            
+            String imagenCPU = "deportivo_rojo"; 
 
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new MenuPrincipal().setVisible(true));
+            PistaCarrera pista = new PistaCarrera(auto1, auto2, nivelDificultad, imagenCPU, esUnJugador);
+            pista.setVisible(true);
+            this.dispose(); 
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error de motor: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox<String> cmbAutos;
-    private javax.swing.JComboBox<String> cmbModo;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JLabel jLabel1;
-    // End of variables declaration//GEN-END:variables
-    
-    // BLOQUE 1: Pon esto al final de MenuPrincipal.java (antes de la última llave '}')
-    private modelo.Vehiculo fabricarVehiculo(String nombre) {
-        switch(nombre) {
-            case "auto_rojo": return new modelo.AutoDeportivo(nombre); // Usa la clase de Saúl[cite: 7]
-            case "deportivo_azul": return new modelo.AutoDeportivo(nombre); // Usa la clase de Saúl[cite: 7]
-            case "deportivo_rojo": return new modelo.AutoDeportivo(nombre); // Usa la clase de Saúl[cite: 7]
-            case "formula_1": return new modelo.Formula1(nombre); // Usa la clase de Saúl[cite: 4]
-            case "formula_2": return new modelo.Formula1(nombre); // Usa la clase de Saúl[cite: 4]
-            case "vocho": return new modelo.Camioneta(nombre); // El vocho será la Camioneta (lento pero seguro)[cite: 8]
-            default: return new modelo.AutoDeportivo("Generico"); // Clase por defecto[cite: 7]
+    private Vehiculo fabricarVehiculo(String eleccion) {
+        switch(eleccion) {
+            case "- Auto Rojo -": return new AutoDeportivo("auto_rojo");
+            case "- Deportivo Azul -": return new AutoDeportivo("deportivo_azul");
+            case "- Deportivo Rojo -": return new AutoDeportivo("deportivo_rojo");
+            case "- Fórmula 1 -": return new Formula1("formula_1");
+            case "- Fórmula 2 -": return new Formula1("formula_2");
+            case "- Vocho -": return new Camioneta("vocho");
+            default: return new AutoDeportivo("auto_rojo");
         }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new MenuPrincipal().setVisible(true));
     }
 }
