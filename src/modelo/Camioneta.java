@@ -2,11 +2,11 @@ package modelo;
 
 public class Camioneta extends Vehiculo {
     public Camioneta(String nombre) {
-        super(nombre, 8); // Velocidad base baja
+        super(nombre, 8); 
     }
 
     @Override
     public void avanzar() {
-        this.posicion += velocidadBase; 
+        setPosicion(getPosicion() + getVelocidadBase()); 
     }
 }
