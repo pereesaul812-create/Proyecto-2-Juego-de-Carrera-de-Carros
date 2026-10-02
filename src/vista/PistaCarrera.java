@@ -23,6 +23,9 @@ public class PistaCarrera extends JFrame {
         setSize(1200, 600); 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
         setLocationRelativeTo(null);
+        
+        // Iniciar música de la carrera
+        modelo.ReproductorAudio.getInstancia().reproducirMusica("carrera_tema.wav");
 
         this.auto1 = eleccionJ1;
         this.auto2 = eleccionJ2;
@@ -119,6 +122,32 @@ public class PistaCarrera extends JFrame {
         fondoPista.setLayout(null);
         setContentPane(fondoPista);
 
+        // Botón interactivo de Pausa (esquina superior derecha, semi-transparente)
+        JLabel btnPausa = new JLabel("||", SwingConstants.CENTER);
+        btnPausa.setFont(new Font("Consolas", Font.BOLD, 18));
+        btnPausa.setForeground(new Color(255, 255, 255, 200)); // Blanco transparente
+        btnPausa.setBackground(new Color(30, 15, 60, 150)); // Morado transparente
+        btnPausa.setOpaque(true);
+        btnPausa.setBounds(1130, 15, 40, 40);
+        btnPausa.setBorder(BorderFactory.createLineBorder(new Color(255, 200, 50, 150), 2));
+        btnPausa.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        btnPausa.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                mostrarMenuPausa();
+            }
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                btnPausa.setBackground(new Color(200, 40, 120, 200)); // Se vuelve magenta al pasar el mouse
+            }
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                btnPausa.setBackground(new Color(30, 15, 60, 150)); // Vuelve a la normalidad
+            }
+        });
+        fondoPista.add(btnPausa);
+
         lblSemaforo = new JLabel("Cargando Motores...", SwingConstants.CENTER);
         lblSemaforo.setFont(new Font("Consolas", Font.BOLD, 60));
         lblSemaforo.setForeground(Color.WHITE);
@@ -133,17 +162,24 @@ public class PistaCarrera extends JFrame {
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) { // <-- EL SECRETO: Solo avanza al soltar la tecla
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    mostrarMenuPausa();
+                    return;
+                }
+                
                 if (!carreraActiva) return;
 
-                // Jugador 1: Obligado a machacar y soltar la 'D' repetidamente
-                if (e.getKeyCode() == KeyEvent.VK_D) {
+                // Jugador 1: 1 Jugador usa Flecha Derecha, 2 Jugadores usa 'D'
+                if ((unJugador && e.getKeyCode() == KeyEvent.VK_RIGHT) || (!unJugador && e.getKeyCode() == KeyEvent.VK_D)) {
                     auto1.avanzar();
                     lblJugador1.setLocation(10 + auto1.getPosicion(), lblJugador1.getY());
+                    modelo.ReproductorAudio.getInstancia().reproducirEfecto("motor.wav");
                 }
-                // Jugador 2: Obligado a machacar y soltar la Flecha Derecha
-                else if (e.getKeyCode() == KeyEvent.VK_RIGHT && !unJugador) {
+                // Jugador 2: Usa Flecha Derecha
+                else if (!unJugador && e.getKeyCode() == KeyEvent.VK_RIGHT) {
                     auto2.avanzar();
                     lblJugador2.setLocation(10 + auto2.getPosicion(), lblJugador2.getY());
+                    modelo.ReproductorAudio.getInstancia().reproducirEfecto("motor.wav");
                 }
                 verificarGanador();
             }
@@ -173,12 +209,15 @@ public class PistaCarrera extends JFrame {
                 if (paso == 0) {
                     lblSemaforo.setText("🔴 PREPARADOS...");
                     lblSemaforo.setForeground(new Color(255, 50, 50));
+                    modelo.ReproductorAudio.getInstancia().reproducirEfecto("beep.wav");
                 } else if (paso == 1) {
                     lblSemaforo.setText("🟡 LISTOS...");
                     lblSemaforo.setForeground(new Color(255, 255, 50));
+                    modelo.ReproductorAudio.getInstancia().reproducirEfecto("beep.wav");
                 } else if (paso == 2) {
                     lblSemaforo.setText("🟢 ¡GOGOGO!");
                     lblSemaforo.setForeground(new Color(50, 255, 50));
+                    modelo.ReproductorAudio.getInstancia().reproducirEfecto("go.wav");
                     carreraActiva = true;
                     timerCPU.start();
                 } else if (paso == 3) {
@@ -204,34 +243,138 @@ public class PistaCarrera extends JFrame {
             carreraActiva = false;
             timerCPU.stop();
             
-            // Opciones del Menú
-            String[] opciones = {"Repetir Carrera", "Regresar al Menú"};
-            int eleccion = JOptionPane.showOptionDialog(this,
-                    "🏁 ¡El ganador es: " + ganador + "!\n¿Qué deseas hacer ahora?",
-                    "Fin de la Carrera",
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    opciones,
-                    opciones[0]);
+            modelo.ReproductorAudio.getInstancia().detenerMusica();
+            modelo.ReproductorAudio.getInstancia().reproducirEfecto("victoria.wav");
+            
+            JDialog dialogoFin = new JDialog(this, "Fin de la Carrera", true);
+            dialogoFin.setSize(400, 280);
+            dialogoFin.setLocationRelativeTo(this);
+            dialogoFin.setUndecorated(true);
+            
+            JPanel panel = new JPanel(new GridLayout(4, 1, 10, 15));
+            panel.setBackground(new Color(30, 15, 60));
+            panel.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(255, 200, 50), 3),
+                    BorderFactory.createEmptyBorder(20, 20, 20, 20)
+            ));
 
-            if (eleccion == 0) {
-                // Opción 1: Repetir Carrera (Reinicia todo a la posición inicial)
-                auto1.reiniciar();
-                auto2.reiniciar();
-                cpu.reiniciar();
-                lblJugador1.setLocation(10, lblJugador1.getY());
-                lblJugador2.setLocation(10, lblJugador2.getY());
-                lblCPU.setLocation(10, lblCPU.getY());
+            JLabel lblTitulo = new JLabel("¡FIN DE LA CARRERA!", SwingConstants.CENTER);
+            lblTitulo.setForeground(new Color(255, 200, 50));
+            lblTitulo.setFont(new Font("Consolas", Font.BOLD, 22));
+            panel.add(lblTitulo);
+            
+            JLabel lblGanador = new JLabel("Ganador: " + ganador, SwingConstants.CENTER);
+            lblGanador.setForeground(Color.WHITE);
+            lblGanador.setFont(new Font("Consolas", Font.BOLD, 16));
+            panel.add(lblGanador);
+
+            String[] textos = {"Repetir Carrera", "Regresar al Menú"};
+            
+            for (int i = 0; i < textos.length; i++) {
+                JButton btn = new JButton(textos[i]);
+                btn.setBackground(new Color(200, 40, 120));
+                btn.setForeground(Color.WHITE);
+                btn.setFont(new Font("Consolas", Font.BOLD, 14));
+                btn.setOpaque(true);
+                btn.setBorderPainted(false);
+                btn.setFocusPainted(false);
                 
-                lblSemaforo.setVisible(true);
-                iniciarSemaforo();
-            } else {
-                // Opción 2: Cierra la pista y abre el Menú Principal
-                new MenuPrincipal().setVisible(true);
-                this.dispose();
+                final int opcion = i;
+                btn.addActionListener(evt -> {
+                    modelo.ReproductorAudio.getInstancia().reproducirEfecto("click.wav");
+                    dialogoFin.dispose();
+                    if (opcion == 0) {
+                        reiniciarCarrera();
+                    } else {
+                        new MenuPrincipal().setVisible(true);
+                        PistaCarrera.this.dispose();
+                    }
+                });
+                panel.add(btn);
             }
+
+            dialogoFin.add(panel);
+            dialogoFin.setVisible(true);
         }
+    }
+
+    private void reiniciarCarrera() {
+        auto1.reiniciar();
+        auto2.reiniciar();
+        cpu.reiniciar();
+        lblJugador1.setLocation(10, lblJugador1.getY());
+        lblJugador2.setLocation(10, lblJugador2.getY());
+        lblCPU.setLocation(10, lblCPU.getY());
+        
+        lblSemaforo.setVisible(true);
+        iniciarSemaforo();
+    }
+
+    private void mostrarMenuPausa() {
+        if (!carreraActiva) return; // Solo pausar si la carrera está corriendo
+
+        carreraActiva = false;
+        timerCPU.stop();
+        modelo.ReproductorAudio.getInstancia().reproducirEfecto("click.wav");
+
+        JDialog dialogoPausa = new JDialog(this, "Pausa", true);
+        dialogoPausa.setSize(300, 370);
+        dialogoPausa.setLocationRelativeTo(this);
+        dialogoPausa.setUndecorated(true);
+        
+        JPanel panel = new JPanel(new GridLayout(6, 1, 10, 15));
+        panel.setBackground(new Color(30, 15, 60));
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(255, 200, 50), 3),
+                BorderFactory.createEmptyBorder(20, 20, 20, 20)
+        ));
+
+        JLabel lblTitulo = new JLabel("PAUSA", SwingConstants.CENTER);
+        lblTitulo.setForeground(new Color(255, 200, 50));
+        lblTitulo.setFont(new Font("Consolas", Font.BOLD, 24));
+        panel.add(lblTitulo);
+
+        String[] textos = {"Reanudar", "Reiniciar Carrera", "Menú Principal", "Manual de usuario", "Ajustes de Sonido"};
+        
+        for (int i = 0; i < textos.length; i++) {
+            JButton btn = new JButton(textos[i]);
+            btn.setBackground(new Color(200, 40, 120));
+            btn.setForeground(Color.WHITE);
+            btn.setFont(new Font("Consolas", Font.BOLD, 14));
+            btn.setOpaque(true);
+            btn.setBorderPainted(false);
+            btn.setFocusPainted(false);
+            
+            final int opcion = i;
+            btn.addActionListener(evt -> {
+                modelo.ReproductorAudio.getInstancia().reproducirEfecto("click.wav");
+                if (opcion == 3) {
+                    // Abrimos el manual encima del menú de pausa sin cerrarlo
+                    new ManualUsuario(PistaCarrera.this).setVisible(true);
+                    return; 
+                } else if (opcion == 4) {
+                    new ConfiguracionAudio(dialogoPausa).setVisible(true);
+                    return;
+                }
+                
+                dialogoPausa.dispose();
+                
+                if (opcion == 1) {
+                    reiniciarCarrera();
+                } else if (opcion == 2) {
+                    new MenuPrincipal().setVisible(true);
+                    PistaCarrera.this.dispose();
+                } else {
+                    carreraActiva = true;
+                    timerCPU.start();
+                    PistaCarrera.this.requestFocusInWindow(); // Recuperar el control del teclado tras usar el ratón
+                }
+            });
+            panel.add(btn);
+        }
+
+        dialogoPausa.add(panel);
+        dialogoPausa.setVisible(true);
     }
 
     private JLabel crearVehiculoImagen(String nombreArchivo, int y) {

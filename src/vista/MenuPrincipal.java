@@ -17,6 +17,102 @@ public class MenuPrincipal extends javax.swing.JFrame {
      */
     public MenuPrincipal() {
         initComponents();
+        aplicarTema();
+    }
+    
+    private void aplicarTema() {
+        // Quitar bordes del sistema para igualar al menú de pausa
+        // Es necesario llamar a dispose() antes porque initComponents() hace un pack() y lo vuelve "displayable"
+        this.dispose();
+        setUndecorated(true);
+        
+        // Iniciar música de fondo del menú
+        modelo.ReproductorAudio.getInstancia().reproducirMusica("menu_synthwave.wav");
+        
+        // Crear un panel con el mismo diseño del menú de pausa
+        javax.swing.JPanel mainPanel = new javax.swing.JPanel();
+        mainPanel.setLayout(new java.awt.GridLayout(7, 1, 10, 10));
+        mainPanel.setBackground(new java.awt.Color(30, 15, 60));
+        mainPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 200, 50), 3),
+                javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20)
+        ));
+        
+        // Título principal
+        jLabel1.setForeground(new java.awt.Color(255, 200, 50));
+        jLabel1.setFont(new java.awt.Font("Consolas", java.awt.Font.BOLD, 24));
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        
+        // Estilo de los botones
+        java.awt.Color colorBoton = new java.awt.Color(200, 40, 120);
+        java.awt.Color colorTexto = java.awt.Color.WHITE;
+        java.awt.Font fuenteBotones = new java.awt.Font("Consolas", java.awt.Font.BOLD, 14);
+        
+        jButton1.setBackground(colorBoton);
+        jButton1.setForeground(colorTexto);
+        jButton1.setFont(fuenteBotones);
+        jButton1.setOpaque(true);
+        jButton1.setBorderPainted(false);
+        jButton1.setFocusPainted(false);
+        
+        jButton2.setBackground(colorBoton);
+        jButton2.setForeground(colorTexto);
+        jButton2.setFont(fuenteBotones);
+        jButton2.setOpaque(true);
+        jButton2.setBorderPainted(false);
+        jButton2.setFocusPainted(false);
+        
+        // Solo agregamos el listener si no tiene ninguno (para evitar duplicados al instanciar)
+        if (jButton2.getActionListeners().length == 0) {
+            jButton2.addActionListener(e -> {
+                modelo.ReproductorAudio.getInstancia().reproducirEfecto("click.wav");
+                new ManualUsuario(this).setVisible(true);
+            });
+        }
+        
+        // Botón Ajustes
+        javax.swing.JButton btnAjustes = new javax.swing.JButton("Ajustes de Sonido");
+        btnAjustes.setBackground(colorBoton);
+        btnAjustes.setForeground(colorTexto);
+        btnAjustes.setFont(fuenteBotones);
+        btnAjustes.setOpaque(true);
+        btnAjustes.setBorderPainted(false);
+        btnAjustes.setFocusPainted(false);
+        btnAjustes.addActionListener(e -> {
+            modelo.ReproductorAudio.getInstancia().reproducirEfecto("click.wav");
+            new ConfiguracionAudio(this).setVisible(true);
+        });
+        
+        // Botón de salir (necesario ya que quitamos los controles de la ventana)
+        javax.swing.JButton btnSalir = new javax.swing.JButton("Salir del Juego");
+        btnSalir.setBackground(colorBoton);
+        btnSalir.setForeground(colorTexto);
+        btnSalir.setFont(fuenteBotones);
+        btnSalir.setOpaque(true);
+        btnSalir.setBorderPainted(false);
+        btnSalir.setFocusPainted(false);
+        btnSalir.addActionListener(e -> {
+            modelo.ReproductorAudio.getInstancia().reproducirEfecto("click.wav");
+            System.exit(0);
+        });
+        
+        // Estilo de los selectores (combobox)
+        cmbAutos.setFont(new java.awt.Font("Consolas", java.awt.Font.PLAIN, 14));
+        cmbModo.setFont(new java.awt.Font("Consolas", java.awt.Font.PLAIN, 14));
+        
+        // Agrupar elementos en el nuevo orden: Título, Combobox, Botones
+        mainPanel.add(jLabel1);
+        mainPanel.add(cmbAutos);
+        mainPanel.add(cmbModo);
+        mainPanel.add(jButton1);
+        mainPanel.add(jButton2);
+        mainPanel.add(btnAjustes);
+        mainPanel.add(btnSalir);
+        
+        // Reemplazar el contenedor principal y centrar
+        setContentPane(mainPanel);
+        setSize(320, 420);
+        setLocationRelativeTo(null);
     }
 
     /**
@@ -47,7 +143,7 @@ public class MenuPrincipal extends javax.swing.JFrame {
         cmbAutos.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "auto_rojo", "deportivo_azul", "deportivo_rojo", "formula_1", "formula_2", "vocho" }));
         cmbAutos.addActionListener(this::cmbAutosActionPerformed);
 
-        cmbModo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "1 Jugador", " ", "2 Jugadores" }));
+        cmbModo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "1 Jugador", "2 Jugadores" }));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -58,20 +154,20 @@ public class MenuPrincipal extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(111, 111, 111)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jButton2)
-                            .addComponent(jButton1)
-                            .addComponent(cmbAutos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+                            .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(cmbAutos, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(144, 144, 144)
-                        .addComponent(cmbModo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(153, Short.MAX_VALUE))
+                        .addComponent(cmbModo, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(100, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(25, 25, 25)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(cmbAutos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(38, 38, 38)
@@ -87,6 +183,8 @@ public class MenuPrincipal extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        modelo.ReproductorAudio.getInstancia().reproducirEfecto("click.wav");
+        modelo.ReproductorAudio.getInstancia().detenerMusica(); // Preparamos el silencio para la carrera
     // BLOQUE 2: Va DENTRO del evento del botón Iniciar Carrera
         try {
             // 1. Obtenemos el auto que eligió el usuario en el ComboBox
